@@ -1,0 +1,14 @@
+<mat-toolbar color="primary">
+<mat-toolbar-row>
+    <span>Accounts UI</span>
+    <span class="example-spacer"></span>
+    <button mat-button [routerLink]="['/overview']" routerLinkActive="active">Account Overview</button>
+    <button mat-button [matMenuTriggerFor]="menu">Accounts</button>
+    <mat-menu #menu="matMenu">
+      <button *ngFor="let account of accountArray" mat-menu-item [routerLink]="['/account', account._id]">
+          {{account.name}}
+      </button>
+    </mat-menu>
+</mat-toolbar-row>
+</mat-toolbar>
+<router-outlet />

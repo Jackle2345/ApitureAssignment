@@ -1,0 +1,15 @@
+{
+  "_id": "73016ef6-891e-45b3-899a-5cb069f90235",
+  "name": "Platinum Checking",
+  "openedAt": "2023-10-25T18:47:49.722Z",
+  "routingNumber": "053112916",
+  "accountNumbers": {
+    "masked": "*************8543"
+  },
+  "accountType": "Personal Checking",
+  "ifxType": "DDA",
+  "balance": {
+    "available": "130.79",
+    "currency": "USD"
+  }
+}

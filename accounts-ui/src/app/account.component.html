@@ -1,0 +1,61 @@
+<mat-grid-list cols="6" rowHeight="100px">
+  <mat-grid-tile class="gray" [colspan]="2" >Account Type</mat-grid-tile>
+  <mat-grid-tile [colspan]="2">{{accountLoaded.accountType}}</mat-grid-tile>
+  <mat-grid-tile [colspan]="2"></mat-grid-tile>
+  <mat-grid-tile class="gray" [colspan]="2" >Nickname</mat-grid-tile>
+  <mat-grid-tile [colspan]="2">
+    @if (editMode) {
+    <mat-form-field>
+      <mat-label>Nickname</mat-label>
+      <input type="text" [(ngModel)]='accountLoaded.name' placeholder="{{accountLoaded.name}}" matInput>
+    </mat-form-field>
+    }
+    @else {
+      {{accountLoaded.name}}
+    }
+  </mat-grid-tile>
+  <mat-grid-tile [colspan]="2">
+    <button mat-button (click)="toggleEditMode(editMode)">
+      @if (editMode) {
+        Submit
+      }
+      @else {
+        Edit
+      }
+    </button>
+  @if (editMode) {
+    <button mat-button (click)="toggleEditMode(false)">Cancel</button>
+  }
+  </mat-grid-tile>
+  <mat-grid-tile class="gray" [colspan]="2">Opened</mat-grid-tile>
+  <mat-grid-tile [colspan]="2">{{accountLoaded.openedAt | date}}</mat-grid-tile>
+  <mat-grid-tile [colspan]="2"></mat-grid-tile>
+  <mat-grid-tile class="gray" [colspan]="2">Account Number</mat-grid-tile>
+  <mat-grid-tile [colspan]="2">
+      @if (fieldTextType) {
+        {{accountLoaded.accountNumbers?.masked}}
+      }
+      @else {
+        {{accountLoaded.accountNumbers?.full}}
+      }
+  </mat-grid-tile>
+  <mat-grid-tile [colspan]="2">
+    <button mat-button (click)="toggleFieldTextType()">
+      @if (fieldTextType) {
+        Show
+      }
+      @else {
+        Hide
+      }
+    </button>
+  </mat-grid-tile>
+  <mat-grid-tile class="gray"  [colspan]="2">Routing Number</mat-grid-tile>
+  <mat-grid-tile [colspan]="2">{{accountLoaded.routingNumber}}</mat-grid-tile>
+  <mat-grid-tile [colspan]="2"></mat-grid-tile>
+  <mat-grid-tile [colspan]="6">
+    <button mat-raised-button [routerLink]="['overview']">
+      Return to overview
+    </button>
+  </mat-grid-tile>
+</mat-grid-list>
+

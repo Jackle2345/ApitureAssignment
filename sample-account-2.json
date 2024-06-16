@@ -1,0 +1,15 @@
+{
+  "_id": "73016ef6-891e-45b3-899a-5cb069f90235",
+  "name": "Personal Savings",
+  "openedAt": "2024-03-25T18:47:49.722Z",
+  "routingNumber": "053112916",
+  "accountNumbers": {
+    "masked": "*************9632"
+  },
+  "accountType": "Personal Savings",
+  "ifxType": "SDA",
+  "balance": {
+    "available": "0.00",
+    "currency": "USD"
+  }
+}

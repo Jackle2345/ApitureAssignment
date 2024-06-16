@@ -1,0 +1,358 @@
+openapi: 3.0.0
+info:
+  title: Accounts
+  description: >-
+    The Accounts API manages banking accounts for bank customers. Accounts are those controlled by the
+      financial institution (FI). Users may view balances and account details and update
+      the nickname of their account.
+  version: 0.1.0
+tags:
+  - name: Accounts
+    description: Bank Accounts
+servers:
+  - url: /accounts
+paths:
+  /accounts:
+    get:
+      summary: Return a collection of accounts
+      description: Return a collection of accounts.
+      operationId: getAccounts
+      tags:
+        - Accounts
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/accounts"
+        "400":
+          $ref: "#/components/responses/400"
+
+  /accounts/{accountId}:
+    get:
+      summary: Fetch a representation of this account
+      description: >-
+        Return a representation of this account resource. The full accountNumber
+        should not be returned unless the user provides the `?unmasked` query parameter.
+      operationId: getAccount
+      tags:
+        - Accounts
+      parameters:
+        - $ref: "#/components/parameters/accountIdPathParam"
+        - $ref: "#/components/parameters/unmaskedQueryParam"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/account"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404Account"
+    patch:
+      summary: Update this account
+      description: Perform a partial update of this account.
+      operationId: patchAccount
+      tags:
+        - Accounts
+      parameters:
+        - $ref: "#/components/parameters/accountIdPathParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/accountPatch"
+        required: true
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/account"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404Account"
+
+components:
+  parameters:
+    accountIdPathParam:
+      name: accountId
+      description: The unique identifier of this account. This is an opaque string.
+      in: path
+      required: true
+      schema:
+        type: string
+    unmaskedQueryParam:
+      name: unmasked
+      description: >-
+        When requesting an account, the full account number is not included in the response by default, for security reasons.
+        Include this query parameter, with a value of `true`, to request that the response body includes the full account number.
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+
+  responses:
+    "400":
+      description: >-
+        Bad Request. The request body or one or more of the query parameters was not well formed.
+        The `_error` field in the response will contain details about the request error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorResponse"
+    404Account:
+      description: >-
+        Not Found. There is no such account resource at the specified `{accountId}`.
+        The `_error` field in the response will contain details about the request error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorResponse"
+
+  schemas:
+    accountFields:
+      title: Account Fields
+      description: Common Account Fields used to build other schemas.
+      type: object
+      properties:
+        name:
+          description: The user-assigned name of this account.
+          type: string
+          maxLength: 128
+          minLength: 1
+
+    accountPatch:
+      title: Account Patch
+      description: >-
+        Request to patch an account.
+      allOf:
+        - $ref: "#/components/schemas/accountFields"
+      example:
+        name: Platinum Checking
+
+    account:
+      title: Account
+      description: >-
+        Representation of an account resource. A banking account, which is an instance of a banking product.
+      allOf:
+        - $ref: "#/components/schemas/accountFields"
+        - type: object
+          properties:
+            _id:
+              description: The unique identifier for this account resource. This is an immutable opaque string.
+              readOnly: true
+              type: string
+            accountType:
+              description: A string which tells the name of the banking product.
+              type: string
+              maxLength: 4096
+              minLength: 1
+              example: "Personal Checking"
+            ifxType:
+              description: >-
+                A code which identifies the product type. This is one of the [IFX AcctType](https://www.nacha.org/content/ifx-standard) values.
+              allOf:
+                - $ref: "#/components/schemas/ifxType"
+            accountNumbers:
+              description: Different representations of the account number.
+              allOf:
+                - $ref: "#/components/schemas/accountNumbers"
+            balance:
+              description: The account balance.
+              readOnly: true
+              allOf:
+                - $ref: "#/components/schemas/balance"
+            openedAt:
+              description: >-
+                The date-time the account was opened. This is an [RFC 3339](https://tools.ietf.org/html/rfc3339) UTC time stamp.
+              type: string
+              format: date-time
+              readOnly: true
+            routingNumber:
+              description: >-
+                The account routing number which identifies the financial institution (FI). The full routing number is derived from the FI's configuration.
+              type: string
+              minLength: 9
+              maxLength: 9
+              readOnly: true
+              example: "021000021"
+      example:
+        _id: 0399abed-fd3d-4830-a88b-30f38b8a365c
+        name: Platinum Checking
+        routingNumber: "021000021"
+        accountNumbers:
+          masked: "*************3210"
+        balance:
+          available: "3450.30"
+          currency: USD
+        accountType: Personal Savings
+        ifxType: SDA
+
+    accounts:
+      title: Account Collection
+      type: object
+      description: A page of embedded account summaries.
+      required:
+        - items
+      properties:
+        items:
+          description: An array containing account items.
+          type: array
+          items:
+            $ref: "#/components/schemas/account"
+      example:
+        items:
+          - _id: 0399abed-fd3d-4830-a88b-30f38b8a365c
+            name: Platinum Account
+            routingNumber: "021000021"
+            accountNumbers:
+              masked: "*************3210"
+            balance:
+              available: "3450.30"
+              currency: USD
+            accountType: Personal Savings
+            ifxType: SDA
+
+    balance:
+      title: Account Balance
+      description: >-
+        The balance of the account. This is derived data and not mutable through the API.
+        Balances may be negative, indicating a deficit or loan balance.
+      properties:
+        available:
+          description: >-
+            The string representation of the exact decimal available balance. For deposit accounts,
+            this reflects the amount that may be used for withdrawals or transfers.
+            This field does not apply to debit accounts such as loans.
+          type: string
+          readOnly: true
+          example: "2850.30"
+        currency:
+          description: The [ISO 4217 currency code](https://en.wikipedia.org/wiki/ISO_4217) for this balance.
+          type: string
+          readOnly: true
+      example:
+        available: "2850.30"
+        currency: USD
+
+    ifxType:
+      title: IFX Account Type
+      description: >-
+        A code which identifies the product type. This is one of the [IFX AcctType](https://www.nacha.org/content/ifx-standard) values.
+
+        <table>
+        <tr>
+          <th>Value</th><th>Description</th>
+        </tr>
+        <tr>
+            <td><strong><code>DDA</code></strong></td><td>Demand deposit account</td>
+            </tr>
+        <tr>
+            <td><strong><code>SDA</code></strong></td><td>Savings deposit account</td>
+            </tr>
+        </table>
+
+      type: string
+      enum:
+        - DDA
+        - SDA
+
+    accountNumbers:
+      title: Account Numbers
+      description: >-
+        Different representations of an account number.
+
+        This schema was resolved from [`common/accountNumbers`](https://production.api.apiture.com/schemas/common/accountNumbers/v1.0.1/model.json).
+      type: object
+      properties:
+        masked:
+          description: >-
+            A partial account number that does not contain all the digits of the full account number.
+            This masked number appears in statements or in user experience presentation.
+            The first character is the mask character and is repeated; this does not indicate that the
+            full account number is the same as the mask length. This value is derived and immutable.
+          type: string
+          minLength: 8
+          maxLength: 32
+          readOnly: true
+          example: "*************3210"
+        full:
+          description: >-
+            The full account number. This value only appears when `?unmasked=true` is passed on the `GET` request.
+            It is not included in the summary representation of the account that is included in account collection responses.
+            This value is derived and immutable.
+          type: string
+          minLength: 4
+          maxLength: 17
+          example: "9876543210"
+          readOnly: true
+
+    error:
+      title: Error
+      description: >-
+        Describes an error in an API request or in a service called via the API.
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A localized message string describing the error condition.
+        _id:
+          description: A unique identifier for this error instance. This may be used as a correlation ID with the root cause error (i.e. this ID may be logged at the source of the error). This is is an opaque string.
+          readOnly: true
+          type: string
+        statusCode:
+          description: The HTTP status code associate with this error.
+          type: integer
+          minimum: 100
+          maximum: 599
+          example: 400
+        type:
+          type: string
+          description: >-
+            An error identifier which indicates the category of error and associate it with API support documentation
+            or which the UI tier can use to render an appropriate message or hint. This provides a finer level of granularity
+            than the `statusCode`. For example, instead of just 400 Bad Request, the `type` may be much more specific.
+        occurredAt:
+          type: string
+          format: date-time
+          description: An [RFC 3339](https://tools.ietf.org/html/rfc3339) UTC time stamp indicating when the error occurred.
+          example: "2018-02-02T03:37:15.375Z"
+        remediation:
+          type: string
+          description: An optional localized string which provides hints for how the user or client can resolve the error.
+      example:
+        _id: 2eae46e1575c0a7b0115a4b3
+        message: Descriptive error message...
+        statusCode: 400
+        type: errorType1
+        remediation: Remediation string...
+        occurredAt: "2018-01-25T05:50:52.375Z"
+
+    errorResponse:
+      title: Error Response
+      description: >-
+        Describes an error response, typically returned on 4xx or 5xx errors from API operations. The `_error` object contains the error details.
+      type: object
+      properties:
+        _error:
+          description: An object which describes an error. This value is omitted if the operation succeeded without error.
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/error"
+          readOnly: true
+      example:
+        _error:
+          _id: 2eae46e1-575c-4d69-8a8f-0a7b0115a4b3
+          message: Description of the error will appear here.
+          statusCode: 400
+          type: specificErrorType
+          remediation: Optional instructions to remediate the error may appear here.
+          occurredAt: "2018-01-25T05:50:52.375Z"

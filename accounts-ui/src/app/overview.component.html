@@ -1,0 +1,7 @@
+<mat-card class="account-card" *ngFor="let account of accountArray">
+    <mat-card-title>{{account.name}}</mat-card-title>
+    <mat-card-subtitle>Account: {{account.accountNumbers?.masked}}</mat-card-subtitle>
+    <mat-card-content>Balance: ${{account.balance?.available}}</mat-card-content>
+    <mat-card-actions><button [routerLink]="['/account', account._id]" mat-raised-button>View</button></mat-card-actions>
+</mat-card>
+  
