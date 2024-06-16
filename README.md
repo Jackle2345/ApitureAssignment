@@ -1,5 +1,6 @@
 ## Overview
  - Project created as a relatively quick coding assignment.  Basic full stack application for viewing bank account information
+ - Tests skipped due to time constraint
 
 ## Backend
 - AngularJS
